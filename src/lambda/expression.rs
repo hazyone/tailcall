@@ -136,7 +136,7 @@ impl Eval for Expression {
         &'a self,
         ctx: EvaluationContext<'a, Ctx>,
         conc: &'a Concurrent,
-    ) -> Pin<Box<dyn Future<Output = Result<ConstValue>> + 'a + Send>> {
+    ) -> Pin<Box<dyn Future<Output = std::result::Result<ConstValue, EvaluationError>> + 'a + Send>> {
         Box::pin(async move {
             match self {
                 Expression::Context(op) => match op {
@@ -165,7 +165,7 @@ impl Eval for Expression {
                         .unwrap_or(&async_graphql::Value::Null)
                         .clone())
                 }
-                Expression::Dynamic(value) => value.render_value(&ctx),
+                Expression::Dynamic(value) => Ok(value.render_value(&ctx)?),
                 Expression::Protect(expr) => {
                     ctx.request_ctx
                         .auth_ctx

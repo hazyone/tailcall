@@ -2,6 +2,7 @@ use core::future::Future;
 use std::pin::Pin;
 
 use anyhow::Result;
+use crate::lambda::EvaluationError;
 
 use super::{Concurrent, EvaluationContext, ResolverContextLike};
 
@@ -13,7 +14,7 @@ where
         &'a self,
         ctx: EvaluationContext<'a, Ctx>,
         conc: &'a Concurrent,
-    ) -> Pin<Box<dyn Future<Output = Result<Output>> + 'a + Send>>
+    ) -> Pin<Box<dyn Future<Output = std::result::Result<Output, EvaluationError>> + 'a + Send>>
     where
         Output: 'a;
 }

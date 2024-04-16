@@ -20,6 +20,7 @@ use crate::json::JsonLike;
 use crate::lambda::EvaluationError;
 use crate::valid::Validator;
 use crate::{grpc, http};
+use crate::document::print;
 
 #[derive(Clone, Debug, strum_macros::Display)]
 pub enum IO {
@@ -49,7 +50,7 @@ impl Eval for IO {
         &'a self,
         ctx: super::EvaluationContext<'a, Ctx>,
         _conc: &'a super::Concurrent,
-    ) -> Pin<Box<dyn Future<Output = Result<ConstValue>> + 'a + Send>> {
+    ) -> Pin<Box<dyn Future<Output = std::result::Result<ConstValue, EvaluationError>> + 'a + Send>> {
         let key = self.cache_key(&ctx);
         Box::pin(async move {
             ctx.request_ctx
@@ -58,11 +59,10 @@ impl Eval for IO {
                     Box::pin(async {
                         self.eval_inner(ctx, _conc)
                             .await
-                            .map_err(|err| err.to_string())
+                            .map_err(EvaluationError::from)
                     })
                 })
                 .await
-                .map_err(|err| anyhow::anyhow!(err))
         })
     }
 }

@@ -97,7 +97,6 @@ impl Response<Bytes> {
             grpc_status_message: grpc_status.message().to_owned(),
             grpc_status_details: ConstValue::Object(obj),
         };
-
         // TODO: because of this conversion to anyhow::Error
         // we lose additional details that could be added
         // through async_graphql::ErrorExtensions

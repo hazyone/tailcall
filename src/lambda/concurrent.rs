@@ -1,5 +1,6 @@
 use futures_util::stream::FuturesUnordered;
 use futures_util::{Future, StreamExt};
+use crate::lambda::EvaluationError;
 
 ///
 /// Concurrent controls the concurrency of a fold or foreach operation on lists.
@@ -46,14 +47,15 @@ impl Concurrent {
         &self,
         iter: impl Iterator<Item = F>,
         f: impl Fn(A) -> B,
-    ) -> anyhow::Result<Vec<B>>
+    ) -> std::result::Result<Vec<B>, EvaluationError>
     where
-        F: Future<Output = anyhow::Result<A>>,
+        F: Future<Output = std::result::Result<A, EvaluationError>>,
     {
         self.fold(iter, vec![], |mut acc, val| {
             acc.push(f(val?));
             Ok(acc)
         })
         .await
+            .map_err(EvaluationError::from)
     }
 }
